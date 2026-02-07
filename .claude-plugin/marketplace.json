@@ -1,0 +1,13 @@
+{
+  "name": "claude-cowork-plugin",
+  "owner": {
+    "name": "Mrugesh"
+  },
+  "plugins": [
+    {
+      "name": "claude-cowork-plugin",
+      "source": "./claude-cowork-plugin",
+      "description": "Personal Cowork dotfiles: deep web research with persistent queryable storage, and CTO-mode coding via claude-code CLI."
+    }
+  ]
+}

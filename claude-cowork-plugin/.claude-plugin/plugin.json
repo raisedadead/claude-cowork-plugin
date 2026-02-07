@@ -1,0 +1,8 @@
+{
+  "name": "claude-cowork-plugin",
+  "version": "1.0.0",
+  "description": "Personal Cowork dotfiles: deep web research with persistent queryable storage, and CTO-mode coding via claude-code CLI. Research saves to SQLite with full-text search. Coding decomposes broad tasks and delegates autonomously.",
+  "author": {
+    "name": "Mrugesh"
+  }
+}
