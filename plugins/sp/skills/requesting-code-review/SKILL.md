@@ -15,6 +15,7 @@ Dispatch a code reviewer subagent to catch issues before they cascade.
 ## Process
 
 1. **Get git range:**
+
    ```bash
    BASE_SHA=$(git merge-base HEAD main)
    HEAD_SHA=$(git rev-parse HEAD)
@@ -23,7 +24,7 @@ Dispatch a code reviewer subagent to catch issues before they cascade.
 2. **Dispatch reviewer** using the `sp:code-reviewer` agent via `Task` tool:
 
    ```
-   Task(subagent_type="superpowers:code-reviewer", prompt="""
+   Task(subagent_type="sp:code-reviewer", prompt="""
    Review: [what was implemented]
    Requirements: [what it should do — paste plan section or spec]
    Git range: BASE_SHA..HEAD_SHA
@@ -40,10 +41,10 @@ Dispatch a code reviewer subagent to catch issues before they cascade.
 
 3. **Act on feedback:**
 
-   | Severity | Action |
-   |----------|--------|
-   | Critical | Fix immediately |
+   | Severity  | Action                |
+   | --------- | --------------------- |
+   | Critical  | Fix immediately       |
    | Important | Fix before proceeding |
-   | Minor | Note for later |
+   | Minor     | Note for later        |
 
    Push back if reviewer is wrong — show code/tests as evidence.
