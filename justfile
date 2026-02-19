@@ -25,10 +25,16 @@ validate:
             echo "FAIL: invalid JSON: $f"; ERRORS=$((ERRORS + 1))
         fi
     done
-    # Ensure no plugin.json has a version field
+    # Ensure plugin.json versions match marketplace.json
     for f in plugins/*/.claude-plugin/plugin.json; do
-        if jq -e '.version' "$f" &>/dev/null; then
-            echo "FAIL: $f must not contain version (single source: marketplace.json)"
+        name=$(jq -r '.name' "$f")
+        pv=$(jq -r '.version // empty' "$f")
+        mv=$(jq -r --arg n "$name" '.plugins[] | select(.name == $n) | .version' .claude-plugin/marketplace.json)
+        if [ -z "$pv" ]; then
+            echo "FAIL: $f missing version field (required by Cowork resolver)"
+            ERRORS=$((ERRORS + 1))
+        elif [ "$pv" != "$mv" ]; then
+            echo "FAIL: $f version ($pv) != marketplace.json ($mv)"
             ERRORS=$((ERRORS + 1))
         fi
     done
@@ -98,15 +104,19 @@ release plugin bump:
     echo "${PLUGIN}: v${CURRENT} -> v${VERSION}"
     read -rp "Proceed? [y/N] " CONFIRM
     [[ "$CONFIRM" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 1; }
-    # Bump version in marketplace.json (single source of truth)
+    # Bump version in marketplace.json
     IDX=$(jq --arg name "$PLUGIN" '.plugins | to_entries[] | select(.value.name == $name) | .key' .claude-plugin/marketplace.json)
     TMP=$(mktemp)
     jq --arg v "$VERSION" --argjson i "$IDX" '.plugins[$i].version = $v' .claude-plugin/marketplace.json > "$TMP" \
         && mv "$TMP" .claude-plugin/marketplace.json
+    # Sync version to plugin.json (required by Cowork resolver)
+    TMP=$(mktemp)
+    jq --arg v "$VERSION" '.version = $v' "plugins/${PLUGIN}/.claude-plugin/plugin.json" > "$TMP" \
+        && mv "$TMP" "plugins/${PLUGIN}/.claude-plugin/plugin.json"
     # Validate before committing
     just validate
     # Commit and push
-    git add .claude-plugin/marketplace.json
+    git add .claude-plugin/marketplace.json "plugins/${PLUGIN}/.claude-plugin/plugin.json"
     git commit -m "chore(${PLUGIN}): release ${VERSION}"
     git push origin main
     echo "Released ${PLUGIN} v${VERSION}"
