@@ -4,14 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-Personal Claude Code plugin marketplace (monorepo). Two plugins targeting different runtimes:
+Personal Claude Code plugin marketplace (monorepo). Currently one plugin:
 
-| Plugin     | Runtime               | Purpose                                         |
-| ---------- | --------------------- | ----------------------------------------------- |
-| **sp**     | Claude Code CLI       | CTO orchestration + iterative ralph loops       |
-| **cowork** | Claude Desktop Cowork | Research with persistent storage, coding spikes |
-
-**These are mutually exclusive platforms.** sp is only installable in Claude Code CLI. cowork is only installable in Claude Desktop Cowork. They do not run in each other's environment and should never be cross-installed.
+| Plugin | Runtime         | Category       | Purpose                                   |
+| ------ | --------------- | -------------- | ----------------------------------------- |
+| **sp** | Claude Code CLI | `productivity` | CTO orchestration + iterative ralph loops |
 
 ## Commands
 
@@ -41,13 +38,6 @@ plugins/
     skills/cto/SKILL.md            ← the /sp:cto skill prompt (dispatches iterative tasks to ralph)
     skills/ralph/SKILL.md          ← /sp:ralph teammate-based iterative loop coordinator
     skills/cancel-ralph/SKILL.md   ← /sp:cancel-ralph graceful loop cancellation
-  cowork/                          ← Claude Desktop Cowork plugin (experimental)
-    .claude-plugin/plugin.json
-    skills/
-      research/
-        SKILL.md                   ← research skill prompt
-        scripts/research_db.py     ← SQLite-backed research storage
-      coding/SKILL.md              ← coding spike skill prompt
 ```
 
 ### Key design: sp hook system
@@ -79,11 +69,21 @@ The SessionStart hook (`session-start.sh`) injects context about this enforcemen
 
 ## Versioning and Releases
 
-- **Versions in two places, kept in sync:** `marketplace.json` is the primary source. Each `plugin.json` also carries a `version` field because the Cowork resolver requires it (CLI reads from marketplace.json, Cowork reads from plugin.json).
+- **Versions in two places, kept in sync:** `marketplace.json` is the primary source. Each `plugin.json` also carries a `version` field for consistency.
 - `just release <plugin> <bump>` bumps both files, validates, commits, and pushes. No tags, no GitHub releases.
-- `just validate` checks version sync between the two files, plus per-plugin checks (JSON validity, shellcheck for sp hooks, Python syntax for cowork scripts, SKILL.md frontmatter).
+- `just validate` checks version sync between the two files, plus per-plugin checks (JSON validity, shellcheck for sp hooks, SKILL.md frontmatter).
 - CI runs `just validate` on every push to `main` and on PRs.
 - Never edit versions manually — always use `just release`.
+
+## Marketplace Structure
+
+Follows Anthropic's official marketplace conventions:
+
+- `$schema` — points to Anthropic's marketplace schema for validation
+- `metadata` — marketplace-level version and `pluginRoot`
+- `category` — free-form string per plugin (e.g. `productivity`, `development`, `security`, `learning`)
+- `tags` — array of strings for searchability
+- `keywords` — array of strings in plugin.json for discovery
 
 ## Gotchas
 
@@ -98,5 +98,4 @@ The SessionStart hook (`session-start.sh`) injects context about this enforcemen
 ```bash
 claude plugin marketplace add raisedadead/dotplugins
 claude plugin install sp@dotplugins
-claude plugin install cowork@dotplugins
 ```

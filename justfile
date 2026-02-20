@@ -31,7 +31,7 @@ validate:
         pv=$(jq -r '.version // empty' "$f")
         mv=$(jq -r --arg n "$name" '.plugins[] | select(.name == $n) | .version' .claude-plugin/marketplace.json)
         if [ -z "$pv" ]; then
-            echo "FAIL: $f missing version field (required by Cowork resolver)"
+            echo "FAIL: $f missing version field"
             ERRORS=$((ERRORS + 1))
         elif [ "$pv" != "$mv" ]; then
             echo "FAIL: $f version ($pv) != marketplace.json ($mv)"
@@ -67,13 +67,6 @@ validate:
         echo "FAIL: plugins/sp/hooks/hooks.json missing .hooks key"
         ERRORS=$((ERRORS + 1))
     fi
-    # cowork-specific: python syntax check
-    for py in plugins/cowork/skills/*/scripts/*.py; do
-        [ -f "$py" ] || continue
-        if ! python3 -c "import ast; ast.parse(open('$py').read())" 2>/dev/null; then
-            echo "FAIL: syntax error: $py"; ERRORS=$((ERRORS + 1))
-        fi
-    done
     if [ "$ERRORS" -eq 0 ]; then
         echo "All checks passed."
     else
@@ -109,7 +102,7 @@ release plugin bump:
     TMP=$(mktemp)
     jq --arg v "$VERSION" --argjson i "$IDX" '.plugins[$i].version = $v' .claude-plugin/marketplace.json > "$TMP" \
         && mv "$TMP" .claude-plugin/marketplace.json
-    # Sync version to plugin.json (required by Cowork resolver)
+    # Sync version to plugin.json
     TMP=$(mktemp)
     jq --arg v "$VERSION" '.version = $v' "plugins/${PLUGIN}/.claude-plugin/plugin.json" > "$TMP" \
         && mv "$TMP" "plugins/${PLUGIN}/.claude-plugin/plugin.json"
