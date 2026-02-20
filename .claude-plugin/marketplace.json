@@ -14,7 +14,7 @@
     {
       "name": "sp",
       "source": "./plugins/sp",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "description": "CTO orchestration layer for parallel development with Agent Teams and optional worktree isolation. Complementary to superpowers.",
       "category": "productivity",
       "tags": [
