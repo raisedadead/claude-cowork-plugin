@@ -22,7 +22,7 @@ BARE_SKILL="${SKILL_NAME#superpowers:}"
 
 # Tier 1: DENY — orchestration skills replaced by sp:cto
 case "$BARE_SKILL" in
-  executing-plans|dispatching-parallel-agents|subagent-driven-development|using-git-worktrees|finishing-a-development-branch)
+  executing-plans|dispatching-parallel-agents|subagent-driven-development|using-git-worktrees|finishing-a-development-branch|ralph-loop)
     cat << DENY
 {
   "hookSpecificOutput": {

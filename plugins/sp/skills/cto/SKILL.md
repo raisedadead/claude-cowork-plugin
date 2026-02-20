@@ -73,7 +73,25 @@ cd .worktrees/task-<name>
 
 ## Step 4: Spawn Teammates
 
-Spawn ALL teammates via `Task` tool with `team_name` and `name` parameters. Each teammate prompt MUST include:
+### Classifying Tasks: One-Shot vs Iterative
+
+Before spawning, classify each task:
+
+| Type          | When                                                                      | Dispatch method           |
+| ------------- | ------------------------------------------------------------------------- | ------------------------- |
+| **One-shot**  | Clear scope, single attempt likely sufficient                             | Standard teammate (below) |
+| **Iterative** | Needs refinement, must pass a quality gate, "get tests passing" type work | `/sp:ralph` loop          |
+
+Signals a task is iterative:
+
+- Task description says "fix until tests pass", "iterate until clean", "get CI green"
+- Task has an explicit quality gate or success command
+- Task scope is fuzzy — agent may need multiple attempts
+- The plan marks the task as iterative
+
+### One-Shot Tasks
+
+Spawn via `Task` tool with `team_name` and `name` parameters. Each teammate prompt MUST include:
 
 1. **Full task spec** pasted inline (teammates do not inherit conversation history)
 2. **Explicit file scope** — resolve actual file paths from the plan, never use placeholders
@@ -88,6 +106,22 @@ CONSTRAINTS:
 ```
 
 4. If worktree mode, add: `"ONLY work in YOUR worktree at [path]. Do not touch other worktrees or main."`
+
+### Iterative Tasks
+
+Dispatch via `/sp:ralph` with the task spec as the prompt. Include:
+
+- The full task description and acceptance criteria from the plan
+- `--quality-gate` with the relevant test/lint/typecheck command
+- `--max-iterations` based on task complexity (5 for small, 10 for medium, 15+ for large)
+- `--completion-promise` derived from the task's acceptance criteria if clear
+
+Example: a plan task says "Fix all TypeScript errors in the auth module. Acceptance: `npx tsc --noEmit` exits 0."
+→ Dispatch as: `/sp:ralph "Fix all TypeScript errors in the auth module" --quality-gate "npx tsc --noEmit" --completion-promise "TSC CLEAN" --max-iterations 10`
+
+The ralph loop runs autonomously. Wait for it to complete before proceeding to review for that task.
+
+**Important**: Iterative tasks run sequentially (ralph is a serial loop). Do not wait to start other independent one-shot tasks — spawn those in parallel while ralph loops run.
 
 Use **Shift+Tab** for delegate mode — steer, don't implement.
 
@@ -116,6 +150,15 @@ For each completed task, run a two-stage review:
 - Patterns: does the code match existing codebase conventions?
 
 **Fix loop**: If issues are found, direct the teammate to fix them via `SendMessage`. After fixes, re-review. Repeat until clean. NEVER proceed with open review issues.
+
+**Escalation to ralph**: If a teammate fails to fix review issues after 2 attempts via SendMessage, escalate the fix to a ralph loop:
+
+- Synthesize the review feedback + original task spec into a ralph prompt
+- Include the specific files and issues that need fixing
+- Use the project's test/lint command as `--quality-gate`
+- Set `--max-iterations 5` (fixes should converge quickly)
+
+This replaces the manual back-and-forth with automated iteration.
 
 For Agent Teams: ask teammates to cross-review each other's work before shutdown.
 

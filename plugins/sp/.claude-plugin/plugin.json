@@ -11,6 +11,10 @@
     "orchestration",
     "agent-teams",
     "worktrees",
-    "parallel-development"
+    "parallel-development",
+    "ralph",
+    "loop",
+    "iterative",
+    "autonomous"
   ]
 }
