@@ -8,6 +8,7 @@
   },
   "metadata": {
     "version": "1.0.0",
+    "description": "Personal Claude Code plugin marketplace by Mrugesh — orchestration, iterative loops, and development workflow tools.",
     "pluginRoot": "./plugins"
   },
   "plugins": [
@@ -15,7 +16,7 @@
       "name": "dp-cto",
       "source": "./plugins/dp-cto",
       "version": "1.0.0",
-      "description": "CTO orchestration layer — /dp-cto:cto-start for brainstorming and planning, /dp-cto:cto-execute for parallel implementation with Agent Teams, /dp-cto:rlp-start for iterative loops. Complementary to superpowers.",
+      "description": "CTO orchestration layer — /dp-cto:start for brainstorming and planning, /dp-cto:execute for parallel implementation with Agent Teams, /dp-cto:ralph for iterative loops, /dp-cto:verify for research validation. Complementary to superpowers.",
       "category": "productivity",
       "tags": [
         "orchestration",
@@ -23,20 +24,8 @@
         "worktrees",
         "parallel-development",
         "iterative-loops",
-        "cto"
-      ]
-    },
-    {
-      "name": "dp-sct",
-      "source": "./plugins/dp-sct",
-      "version": "1.0.0",
-      "description": "Research validation layer — PostToolUse hooks that inject verification checklists after WebSearch, WebFetch, and MCP tool calls. Includes /dp-sct:check for manual deep-validation.",
-      "category": "productivity",
-      "tags": [
-        "research",
-        "validation",
-        "fact-checking",
-        "verification"
+        "cto",
+        "research-validation"
       ]
     }
   ]

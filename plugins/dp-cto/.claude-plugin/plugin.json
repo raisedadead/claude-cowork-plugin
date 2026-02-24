@@ -1,7 +1,7 @@
 {
   "name": "dp-cto",
   "version": "1.0.0",
-  "description": "CTO orchestration layer — /dp-cto:cto-start for brainstorming and planning, /dp-cto:cto-execute for parallel implementation with Agent Teams, /dp-cto:rlp-start for iterative loops. Complementary to superpowers.",
+  "description": "CTO orchestration layer — /dp-cto:start for brainstorming and planning, /dp-cto:execute for parallel implementation with Agent Teams, /dp-cto:ralph for iterative loops, /dp-cto:verify for research validation. Complementary to superpowers.",
   "author": {
     "name": "Mrugesh",
     "email": "m@raisedadead.com"
@@ -12,6 +12,7 @@
     "orchestration",
     "agent-teams",
     "iterative-loops",
-    "planning"
+    "planning",
+    "research-validation"
   ]
 }

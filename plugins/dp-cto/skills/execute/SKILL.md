@@ -1,6 +1,6 @@
 ---
-name: cto-execute
-description: "Execute an implementation plan with parallel tasks using Agent Teams and optional worktree isolation. Requires a plan from /dp-cto:cto-start."
+name: execute
+description: "Execute an implementation plan with parallel tasks using Agent Teams and optional worktree isolation. Requires a plan from /dp-cto:start."
 ---
 
 <EXTREMELY_IMPORTANT>
@@ -18,7 +18,7 @@ If you catch yourself writing application code, STOP. You are delegating, not co
 | "I'll just fix this one small thing myself"  | You are CTO. Delegate even small fixes.                               |
 | "It's faster if I do it"                     | Faster now, unscalable. Delegate.                                     |
 | "The teammate is stuck, I'll just finish it" | Send guidance via SendMessage. Do not implement.                      |
-| "This doesn't need a plan"                   | dp-cto:cto-execute requires a plan. Run /dp-cto:cto-start first.      |
+| "This doesn't need a plan"                   | dp-cto:execute requires a plan. Run /dp-cto:start first.              |
 | "I can skip review for this trivial change"  | Trivial changes cause subtle bugs. Review everything.                 |
 | "Tests pass, review unnecessary"             | Tests verify behavior, review verifies quality. Both required.        |
 | "I'll set up worktrees by default"           | Shared workspace is default. Worktrees only on request or clear need. |
@@ -32,7 +32,7 @@ A plan MUST exist before invoking this skill. Verify in this order:
 2. Read the referenced plan file — confirm it contains task specs
 3. Confirm each task spec has: description, file scope, acceptance criteria
 
-If no plan is found: say **"No plan found. Run /dp-cto:cto-start first."** and STOP. Do not proceed.
+If no plan is found: say **"No plan found. Run /dp-cto:start first."** and STOP. Do not proceed.
 
 ## Step 1: Assess Isolation
 
@@ -80,7 +80,7 @@ Before spawning, classify each task:
 | Type          | When                                                                      | Dispatch method           |
 | ------------- | ------------------------------------------------------------------------- | ------------------------- |
 | **One-shot**  | Clear scope, single attempt likely sufficient                             | Standard teammate (below) |
-| **Iterative** | Needs refinement, must pass a quality gate, "get tests passing" type work | `/dp-cto:rlp-start` loop  |
+| **Iterative** | Needs refinement, must pass a quality gate, "get tests passing" type work | `/dp-cto:ralph` loop      |
 
 Signals a task is iterative:
 
@@ -109,7 +109,7 @@ CONSTRAINTS:
 
 ### Iterative Tasks
 
-Dispatch via `/dp-cto:rlp-start` with the task spec as the prompt. Include:
+Dispatch via `/dp-cto:ralph` with the task spec as the prompt. Include:
 
 - The full task description and acceptance criteria from the plan
 - `--quality-gate` with the relevant test/lint/typecheck command
@@ -117,13 +117,11 @@ Dispatch via `/dp-cto:rlp-start` with the task spec as the prompt. Include:
 - `--completion-promise` derived from the task's acceptance criteria if clear
 
 Example: a plan task says "Fix all TypeScript errors in the auth module. Acceptance: `npx tsc --noEmit` exits 0."
-→ Dispatch as: `/dp-cto:rlp-start "Fix all TypeScript errors in the auth module" --quality-gate "npx tsc --noEmit" --completion-promise "TSC CLEAN" --max-iterations 10`
+→ Dispatch as: `/dp-cto:ralph "Fix all TypeScript errors in the auth module" --quality-gate "npx tsc --noEmit" --completion-promise "TSC CLEAN" --max-iterations 10`
 
-The rlp-start loop runs autonomously. Wait for it to complete before proceeding to review for that task.
+The ralph loop runs autonomously. Wait for it to complete before proceeding to review for that task.
 
-**Important**: Iterative tasks run sequentially (rlp-start is a serial loop). Do not wait to start other independent one-shot tasks — spawn those in parallel while iterative loops run.
-
-Use **Shift+Tab** for delegate mode — steer, don't implement.
+**Important**: Iterative tasks run sequentially (ralph is a serial loop). Do not wait to start other independent one-shot tasks — spawn those in parallel while iterative loops run.
 
 ## Step 5: Monitor and Steer
 
@@ -151,9 +149,9 @@ For each completed task, run a two-stage review:
 
 **Fix loop**: If issues are found, direct the teammate to fix them via `SendMessage`. After fixes, re-review. Repeat until clean. NEVER proceed with open review issues.
 
-**Escalation to rlp-start**: If a teammate fails to fix review issues after 2 attempts via SendMessage, escalate the fix to an iterative loop:
+**Escalation to ralph**: If a teammate fails to fix review issues after 2 attempts via SendMessage, escalate the fix to an iterative loop:
 
-- Synthesize the review feedback + original task spec into an rlp-start prompt
+- Synthesize the review feedback + original task spec into an ralph prompt
 - Include the specific files and issues that need fixing
 - Use the project's test/lint command as `--quality-gate`
 - Set `--max-iterations 5` (fixes should converge quickly)
@@ -218,6 +216,6 @@ If integration tests fail, use `superpowers:systematic-debugging` to diagnose be
 | Agent modifying files outside scope             | Stop, redirect immediately                          |
 | Merge conflicts in worktree mode                | Review task decomposition — overlap means bad split |
 | More than 4 parallel agents                     | Batch into rounds of 3-4                            |
-| Lead implementing instead of delegating         | Shift+Tab — you are CTO, not IC                     |
+| Lead implementing instead of delegating         | STOP. You are CTO, not IC. Delegate.                |
 | Review has open issues and you want to proceed  | STOP. Fix first.                                    |
 | Teammate asks question and you answer by coding | STOP. Send guidance via SendMessage.                |

@@ -52,11 +52,18 @@ validate:
             ERRORS=$((ERRORS + 1))
         fi
     done
-    # Validate SKILL.md frontmatter exists
+    # Validate SKILL.md frontmatter exists and name matches directory
     for skill in plugins/*/skills/*/SKILL.md; do
         if ! head -1 "$skill" | grep -q '^---'; then
             echo "FAIL: missing YAML frontmatter in $skill"
             ERRORS=$((ERRORS + 1))
+        else
+            dir_name=$(basename "$(dirname "$skill")")
+            fm_name=$(awk '/^---$/{n++; next} n==1 && /^name:/{sub(/^name: */, ""); gsub(/"/, ""); print; exit}' "$skill")
+            if [ -n "$fm_name" ] && [ "$fm_name" != "$dir_name" ]; then
+                echo "FAIL: $skill frontmatter name '$fm_name' != directory name '$dir_name'"
+                ERRORS=$((ERRORS + 1))
+            fi
         fi
     done
     # Shellcheck all hook scripts
@@ -77,7 +84,30 @@ validate:
             echo "FAIL: $hj missing .hooks key"
             ERRORS=$((ERRORS + 1))
         fi
+        # Cross-reference: every script referenced in hooks.json must exist
+        plugin_dir=$(dirname "$(dirname "$hj")")
+        for cmd in $(jq -r '.. | .command? // empty' "$hj"); do
+            resolved="${cmd//\$\{CLAUDE_PLUGIN_ROOT\}/$plugin_dir}"
+            if [ ! -f "$resolved" ]; then
+                echo "FAIL: $hj references missing script: $cmd"
+                ERRORS=$((ERRORS + 1))
+            fi
+        done
     done
+    # Official Claude plugin validator
+    if command -v claude &>/dev/null; then
+        for pd in plugins/*/; do
+            [ -f "${pd}.claude-plugin/plugin.json" ] || continue
+            if ! claude plugin validate "$pd" 2>&1; then
+                echo "FAIL: claude plugin validate ${pd}"; ERRORS=$((ERRORS + 1))
+            fi
+        done
+        if ! claude plugin validate . 2>&1; then
+            echo "FAIL: claude plugin validate ."; ERRORS=$((ERRORS + 1))
+        fi
+    else
+        echo "SKIP: claude CLI not installed"
+    fi
     if [ "$ERRORS" -eq 0 ]; then
         echo "All checks passed."
     else
@@ -86,10 +116,21 @@ validate:
 
 # === Release ===
 
-# Bump all plugins: just release patch|minor|major
+# Bump all plugins: just release patch|minor|major|x.y.z
 release bump:
     #!/usr/bin/env bash
     set -euo pipefail
+    # Pre-flight: must be on main with clean working tree
+    BRANCH=$(git rev-parse --abbrev-ref HEAD)
+    if [ "$BRANCH" != "main" ]; then
+        echo "ERROR: must be on main branch (currently on $BRANCH)" >&2; exit 1
+    fi
+    if [ -n "$(git status --porcelain)" ]; then
+        echo "ERROR: working tree is not clean — commit or stash changes first" >&2; exit 1
+    fi
+    # Pre-flight: validate current state before bumping
+    just validate
+    # Calculate new version
     CURRENT=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
     IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
     case "{{bump}}" in
@@ -100,20 +141,20 @@ release bump:
            if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
                echo "Usage: just release patch|minor|major|x.y.z" >&2; exit 1
            fi ;;
-
     esac
     echo "dotplugins: v${CURRENT} -> v${VERSION}"
     read -rp "Proceed? [y/N] " CONFIRM
     [[ "$CONFIRM" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 1; }
     # Bump all versions in marketplace.json
     TMP=$(mktemp)
-    jq --arg v "$VERSION" '.plugins[].version = $v' .claude-plugin/marketplace.json > "$TMP" \
+    jq --arg v "$VERSION" '.plugins[].version = $v | .metadata.version = $v' .claude-plugin/marketplace.json > "$TMP" \
         && mv "$TMP" .claude-plugin/marketplace.json
     # Sync to each plugin.json
     for f in plugins/*/.claude-plugin/plugin.json; do
         TMP=$(mktemp)
         jq --arg v "$VERSION" '.version = $v' "$f" > "$TMP" && mv "$TMP" "$f"
     done
+    # Post-bump validation (catches version sync issues)
     just validate
     git add .claude-plugin/marketplace.json plugins/*/.claude-plugin/plugin.json
     git commit -m "chore: release v${VERSION}"

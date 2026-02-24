@@ -1,9 +1,9 @@
 ---
-name: rlp-cancel
-description: "Cancel an active dp-cto:rlp-start loop. Lists active ralph state files and lets you choose which to cancel."
+name: ralph-cancel
+description: "Cancel an active dp-cto:ralph loop. Lists active ralph state files and lets you choose which to cancel."
 ---
 
-# Cancel dp-cto:rlp-start Loop
+# Cancel dp-cto:ralph Loop
 
 Follow these steps exactly:
 
@@ -13,7 +13,7 @@ Run via Bash: `ls .claude/ralph/*.md 2>/dev/null`
 
 - If no files found: say "No active ralph loops found." and STOP.
 
-## Step 2: Show Status
+## Step 2: Filter Active Loops
 
 For each file found, read it and extract from the YAML frontmatter:
 
@@ -24,9 +24,11 @@ For each file found, read it and extract from the YAML frontmatter:
 
 Also extract the task description from the `# Task` section.
 
-If only one file: show its status and ask "Cancel this loop?"
+Discard any file where `status` is NOT `running`. Only present files with `status: running`.
 
-If multiple files: show a numbered list with session ID, status, current iteration, and first line of task. Ask which to cancel.
+- If no files have `status: running`: say "No active ralph loops found." and STOP.
+- If one active file: show its status and ask "Cancel this loop?"
+- If multiple active files: show a numbered list with session ID, current iteration, and first line of task. Ask which to cancel.
 
 ## Step 3: Cancel
 

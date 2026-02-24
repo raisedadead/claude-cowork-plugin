@@ -1,6 +1,6 @@
 ---
-name: cto-start
-description: "Entry point for CTO orchestration. Gathers context, brainstorms approaches, writes implementation plan to .claude/plans/. Run this before /dp-cto:cto-execute."
+name: start
+description: "Entry point for CTO orchestration. Gathers context, brainstorms approaches, writes implementation plan to .claude/plans/. Run this before /dp-cto:execute."
 ---
 
 <EXTREMELY_IMPORTANT>
@@ -21,7 +21,7 @@ If you catch yourself writing application code, STOP. You are planning, not codi
 | "I'll put the plan in docs/plans/"             | Plans go to `.claude/plans/<domain>/`. Always.                        |
 | "I'll ask 10 clarifying questions"             | Batch to 2-3 questions with opinionated defaults. Respect their time. |
 | "This is too small to need a plan"             | If it has 2+ tasks, it needs a plan. Write one.                       |
-| "I'll just start cto-execute myself"           | Handoff only. The user decides when to execute.                       |
+| "I'll just start execute myself"               | Handoff only. The user decides when to execute.                       |
 
 ## Step 0: Gather Brief
 
@@ -130,7 +130,7 @@ Write `.claude/plans/<domain>/02-implementation.md`:
 ```markdown
 # [Feature Name] — Implementation Plan
 
-> **For Claude:** Use /dp-cto:cto-execute to implement this plan.
+> **For Claude:** Use /dp-cto:execute to implement this plan.
 
 **Goal:** [One sentence]
 **Architecture:** [2-3 sentences]
@@ -198,9 +198,9 @@ Add the new plan entry:
 
 Print exactly:
 
-**"Plan ready at `.claude/plans/<domain>/02-implementation.md`. Run `/dp-cto:cto-execute` to begin."**
+**"Plan ready at `.claude/plans/<domain>/02-implementation.md`. Run `/dp-cto:execute` to begin."**
 
-Do NOT invoke cto-execute. Do NOT offer to start execution. The user decides when.
+Do NOT invoke execute. Do NOT offer to start execution. The user decides when.
 
 ## NEVER
 
@@ -208,7 +208,7 @@ Do NOT invoke cto-execute. Do NOT offer to start execution. The user decides whe
 2. NEVER skip the clarification step when genuine ambiguity exists
 3. NEVER put plans in `docs/plans/` — always `.claude/plans/<domain>/`
 4. NEVER use placeholder file paths — resolve actual paths from the project
-5. NEVER auto-invoke cto-execute — handoff only
+5. NEVER auto-invoke execute — handoff only
 6. NEVER ask more than 3 questions in a single clarification round
 7. NEVER skip the YAGNI check — always identify deferrable items
 8. NEVER skip updating `.claude/plans/_index.md`
@@ -225,4 +225,4 @@ Do NOT invoke cto-execute. Do NOT offer to start execution. The user decides whe
 | Task touches 6+ files                      | STOP. Split into smaller tasks.                   |
 | Using placeholder paths like `src/foo/...` | STOP. Resolve actual paths from the project.      |
 | Skipping YAGNI check                       | STOP. Always identify what can be deferred.       |
-| About to invoke cto-execute                | STOP. Handoff only. User decides when to execute. |
+| About to invoke execute                    | STOP. Handoff only. User decides when to execute. |
