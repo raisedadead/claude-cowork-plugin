@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
   },
   "homepage": "https://github.com/raisedadead/dotplugins#readme",
   "devDependencies": {
+    "husky": "^9.1.7",
     "vitest": "^4.0.18"
   }
 }
