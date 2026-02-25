@@ -6,38 +6,34 @@ Personal [Claude Code](https://docs.anthropic.com/en/docs/claude-code) plugin ma
 
 ```bash
 claude plugin marketplace add raisedadead/dotplugins
-claude plugin install sp@dotplugins
-claude plugin install cowork@dotplugins
+claude plugin install dp-cto@dotplugins
 ```
 
-## Plugins
+## dp-cto — CTO Orchestration
 
-### sp — CTO Orchestration
+Orchestrate development with [Agent Teams](https://docs.anthropic.com/en/docs/claude-code/agent-teams), iterative loops, and research validation. Complementary to [superpowers](https://github.com/obra/superpowers) — superpowers handles individual contributor skills (TDD, debugging, code review); dp-cto handles orchestration and execution.
 
-Orchestrate parallel development with [Agent Teams](https://docs.anthropic.com/en/docs/claude-code/agent-teams) and optional worktree isolation. Requires [superpowers](https://github.com/obra/superpowers) for planning, TDD, debugging, and code review.
-
-| Skill | What it does                                                            |
-| ----- | ----------------------------------------------------------------------- |
-| `cto` | Orchestrate Agent Teams for parallel tasks, optional worktree isolation |
+| Skill                  | What it does                                                         |
+| ---------------------- | -------------------------------------------------------------------- |
+| `/dp-cto:start`        | Brainstorm approaches, write implementation plan to `.claude/plans/` |
+| `/dp-cto:execute`      | Execute a plan with Agent Teams and optional worktree isolation      |
+| `/dp-cto:ralph`        | Teammate-based iterative loop with fresh context per iteration       |
+| `/dp-cto:ralph-cancel` | Cancel an active ralph loop                                          |
+| `/dp-cto:verify`       | Manual deep-validation of research findings                          |
 
 **Workflow:**
 
 ```
-/brainstorm          → explore the idea, save design       (superpowers)
-/write-plan          → break into tasks, save plan         (superpowers)
-/sp:cto              → dispatch agents to execute parallel  (sp)
+/dp-cto:start    → brainstorm, explore design, write plan
+/dp-cto:execute  → dispatch agents to execute plan in parallel
 ```
 
-Planning comes from superpowers. Execution comes from sp. Hooks intercept superpowers' execution skills (`executing-plans`, `dispatching-parallel-agents`, `subagent-driven-development`) and redirect to `/sp:cto`.
+**Hooks:**
 
-### cowork — Research & Coding (Experimental)
-
-Deep web research with persistent SQLite storage, and quick idea spikes via subagent delegation. **Claude Desktop Cowork only** — not for standard Claude Code CLI sessions.
-
-| Skill      | What it does                                                 |
-| ---------- | ------------------------------------------------------------ |
-| `research` | Web research with fact-checking, saves to queryable database |
-| `coding`   | Task decomposition and subagent delegation                   |
+- **SessionStart** — injects enforcement context into every session
+- **PreToolUse** — intercepts superpowers orchestration skills (e.g. `executing-plans`, `dispatching-parallel-agents`) and redirects to dp-cto equivalents; passes through quality skills (TDD, code review, debugging)
+- **PostToolUse** — injects verification checklists after `WebSearch`, `WebFetch`, and MCP tool calls
+- **Stage enforcement** — tracks workflow stage (`idle → start → planned → execute → executing → complete`) and blocks out-of-order transitions
 
 ## Structure
 
@@ -45,22 +41,20 @@ Deep web research with persistent SQLite storage, and quick idea spikes via suba
 dotplugins/
 ├── .claude-plugin/marketplace.json
 └── plugins/
-    ├── sp/
-    │   ├── .claude-plugin/plugin.json
-    │   ├── hooks/
-    │   │   ├── hooks.json
-    │   │   ├── session-start.sh
-    │   │   └── intercept-orchestration.sh
-    │   └── skills/cto/SKILL.md
-    └── cowork/
+    └── dp-cto/
         ├── .claude-plugin/plugin.json
+        ├── hooks/
+        │   ├── hooks.json
+        │   ├── session-start.sh
+        │   ├── session-cleanup.sh
+        │   ├── intercept-orchestration.sh
+        │   ├── stage-transition.sh
+        │   ├── lib-stage.sh
+        │   └── research-validator.sh
         └── skills/
-            ├── research/
-            │   ├── SKILL.md
-            │   └── scripts/research_db.py
-            └── coding/SKILL.md
+            ├── start/SKILL.md
+            ├── execute/SKILL.md
+            ├── ralph/SKILL.md
+            ├── ralph-cancel/SKILL.md
+            └── verify/SKILL.md
 ```
-
----
-
-The `sp` plugin is a CTO orchestration layer complementary to [superpowers](https://github.com/obra/superpowers) by Jesse Vincent. Superpowers handles individual contributor skills (TDD, debugging, planning, code review). sp handles parallel execution via Agent Teams.
