@@ -12,11 +12,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install just
-        uses: extractions/setup-just@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+
+      - name: Install pnpm
+        run: corepack enable pnpm
 
       - name: Install shellcheck
         run: sudo apt-get install -y shellcheck
 
+      - name: Install dependencies
+        run: pnpm install
+
       - name: Validate
-        run: just validate
+        run: pnpm run validate
