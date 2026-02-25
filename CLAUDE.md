@@ -12,16 +12,19 @@ Personal Claude Code plugin marketplace (monorepo). One plugin:
 
 ## Commands
 
-All development tasks use `just` (see `justfile`):
+Uses `pnpm` scripts with `turbo` for parallel task orchestration:
 
 ```bash
-just                        # list available recipes
-just version                # show current plugin versions (from marketplace.json)
-just validate               # run per-plugin validation checks
-just release patch          # release: just release patch|minor|major|x.y.z
+pnpm test                   # run vitest hook contract + schema tests
+pnpm run lint               # oxlint on tests/
+pnpm run fmt:check          # oxfmt formatting check
+pnpm run check              # turbo: test + lint + fmt:check in parallel
+pnpm run validate           # check + shell-based plugin validation (scripts/validate.sh)
+pnpm run release -- patch   # release: patch|minor|major|x.y.z (scripts/release.sh)
+pnpm run version            # show current plugin version from marketplace.json
 ```
 
-No build step, no tests, no linting. Plugins are plain Markdown skills + shell hooks.
+No build step. Plugins are plain Markdown skills + shell hooks.
 
 ## Architecture
 
@@ -78,11 +81,11 @@ The dp-cto plugin includes a PostToolUse hook (`research-validator.sh`) that fir
 ## Versioning and Releases
 
 - **Versions in three places, kept in sync:** `marketplace.json` plugins array, `marketplace.json` metadata, and each `plugin.json`. All must match.
-- `just release <bump>` validates current state, bumps all version fields, re-validates, commits, and pushes. No tags, no GitHub releases — version in `plugin.json` is what Claude Code uses for update detection.
-- `just validate` runs: JSON validity, version sync, plugin directory existence, SKILL.md frontmatter name vs directory, shellcheck, hooks.json script cross-reference, and `claude plugin validate` (official Anthropic validator).
-- Release recipe requires clean working tree on main branch.
-- CI runs `just validate` on every push to `main` and on PRs.
-- Never edit versions manually — always use `just release`.
+- `pnpm run release -- <bump>` validates current state, bumps all version fields, re-validates, commits, and pushes. No tags, no GitHub releases — version in `plugin.json` is what Claude Code uses for update detection.
+- `pnpm run validate` runs: turbo checks (test + lint + fmt:check), then shell-based validation (JSON validity, version sync, plugin directory existence, SKILL.md frontmatter name vs directory, shellcheck, hooks.json script cross-reference, and `claude plugin validate`).
+- Release script requires clean working tree on main branch.
+- CI runs `pnpm run validate` on every push to `main` and on PRs.
+- Never edit versions manually — always use `pnpm run release`.
 
 ## Marketplace Structure
 
@@ -97,8 +100,8 @@ Follows Anthropic's official marketplace conventions:
 ## Gotchas
 
 - `CLAUDE.md` is globally gitignored (`~/.gitignore`) — do not attempt `git add CLAUDE.md`
-- `just release <bump>` prompts for confirmation — pipe `echo "y"` for non-interactive use
-- Shellcheck runs on `plugins/*/hooks/*.sh` during `just validate` — all hook scripts must pass `-S warning`
+- `pnpm run release -- <bump>` prompts for confirmation — pipe `echo "y"` for non-interactive use
+- Shellcheck runs on `plugins/*/hooks/*.sh` during `pnpm run validate` — all hook scripts must pass `-S warning`
 - Plugin skills live in `skills/<name>/SKILL.md` (not `commands/`) — must have YAML frontmatter with `---`
 - Ralph state files go in `.claude/ralph/` (not `.claude/` root) — session-scoped by timestamp
 - dp-cto PostToolUse hook fires on ALL MCP tools (`mcp__.*`) — if this causes noise, narrow the matcher
