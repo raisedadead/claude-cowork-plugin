@@ -4,6 +4,8 @@ import {
   seedStage,
   seedCorruptStage,
   getStage,
+  getPlanPath,
+  seedIndex,
   createTmpDir,
   removeTmpDir,
 } from "./helpers";
@@ -123,18 +125,6 @@ describe("Stage Enforcement (intercept-orchestration.sh)", () => {
     });
   });
 
-  describe("reviewing stage", () => {
-    beforeEach(() => seedStage(tmpDir, "test-session", "reviewing"));
-
-    test("verify is allowed", async () => {
-      expectAllowed(await runHook(HOOK, skillInput("dp-cto:verify")));
-    });
-
-    test("start is denied", async () => {
-      expectDenied(await runHook(HOOK, skillInput("dp-cto:start")), /review/i);
-    });
-  });
-
   describe("complete stage", () => {
     beforeEach(() => seedStage(tmpDir, "test-session", "complete"));
 
@@ -165,6 +155,14 @@ describe("Stage Enforcement (intercept-orchestration.sh)", () => {
       await seedStage(tmpDir, "test-session", "planned");
       expectAllowed(await runHook(HOOK, skillInput("dp-cto:execute")));
       expect(await getStage(tmpDir, "test-session")).toBe("executing");
+    });
+
+    test("execute preserves existing plan_path", async () => {
+      await seedStage(tmpDir, "test-session", "planned", ".claude/plans/test/02-implementation.md");
+      expectAllowed(await runHook(HOOK, skillInput("dp-cto:execute")));
+      expect(await getPlanPath(tmpDir, "test-session")).toBe(
+        ".claude/plans/test/02-implementation.md",
+      );
     });
   });
 });
@@ -251,6 +249,15 @@ describe("Stage Transitions (stage-transition.sh)", () => {
     await seedStage(tmpDir, "test-session", "executing");
     await runHook(hook, skillInput("superpowers:test-driven-development"));
     expect(await getStage(tmpDir, "test-session")).toBe("executing");
+  });
+
+  test("start extracts plan_path from _index.md", async () => {
+    await seedStage(tmpDir, "test-session", "planning");
+    await seedIndex(tmpDir, "tui/02-implementation.md");
+    await runHook("stage-transition.sh", skillInput("dp-cto:start"));
+    expect(await getPlanPath(tmpDir, "test-session")).toBe(
+      ".claude/plans/tui/02-implementation.md",
+    );
   });
 });
 

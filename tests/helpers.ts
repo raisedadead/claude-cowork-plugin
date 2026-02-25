@@ -60,12 +60,17 @@ export async function removeTmpDir(dir: string): Promise<void> {
   await rm(dir, { recursive: true, force: true });
 }
 
-export async function seedStage(tmpDir: string, sessionId: string, stage: string): Promise<void> {
+export async function seedStage(
+  tmpDir: string,
+  sessionId: string,
+  stage: string,
+  planPath = "",
+): Promise<void> {
   const dir = join(tmpDir, ".claude", "dp-cto");
   await mkdir(dir, { recursive: true });
   const data = {
     stage,
-    plan_path: "",
+    plan_path: planPath,
     started_at: "2026-01-01T00:00:00Z",
     history: [stage],
   };
@@ -89,4 +94,29 @@ export async function getStage(tmpDir: string, sessionId: string): Promise<strin
   } catch {
     return "idle";
   }
+}
+
+export async function getPlanPath(tmpDir: string, sessionId: string): Promise<string> {
+  try {
+    const raw = await readFile(
+      join(tmpDir, ".claude", "dp-cto", `${sessionId}.stage.json`),
+      "utf-8",
+    );
+    const data = JSON.parse(raw);
+    return data.plan_path ?? "";
+  } catch {
+    return "";
+  }
+}
+
+export async function seedIndex(tmpDir: string, planPath: string): Promise<void> {
+  const dir = join(tmpDir, ".claude", "plans");
+  await mkdir(dir, { recursive: true });
+  const content = `# Plan Index
+
+| #  | Phase | Path | Status |
+|----|-------|------|--------|
+| 02  | [Implementation](${planPath}) | Implementation | Awaiting execution |
+`;
+  await writeFile(join(dir, "_index.md"), content);
 }

@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cleanup() {
-  exit 0
-}
-trap cleanup EXIT
-
 if ! command -v jq &>/dev/null; then
   exit 0
 fi

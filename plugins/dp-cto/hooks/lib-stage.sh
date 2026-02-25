@@ -2,6 +2,7 @@
 # Shared library for dp-cto stage state management.
 # Source this file — no side effects, functions only.
 
+# Callers must export CWD before sourcing this file. Falls back to pwd if unset.
 stage_dir() {
   local base="${CWD:-$(pwd)}"
   echo "${base}/.claude/dp-cto"
@@ -48,6 +49,9 @@ write_stage() {
   if [ -f "$file" ]; then
     started_at=$(jq -r '.started_at // empty' "$file" 2>/dev/null) || true
     history=$(jq -c '.history // []' "$file" 2>/dev/null) || true
+    if [ -z "$plan_path" ]; then
+      plan_path=$(jq -r '.plan_path // empty' "$file" 2>/dev/null) || true
+    fi
   fi
 
   if [ -z "${started_at:-}" ]; then

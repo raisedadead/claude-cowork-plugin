@@ -69,13 +69,6 @@ case "$SKILL_NAME" in
           *) REASON="Implementation in progress. Complete execution first, or use /dp-cto:ralph-cancel to abort." ;;
         esac
         ;;
-      reviewing)
-        case "$SKILL" in
-          verify) ALLOWED=true ;;
-          start|execute|ralph) REASON="Review in progress. Complete the review first." ;;
-          *) REASON="Review in progress. Complete the review first." ;;
-        esac
-        ;;
       complete)
         case "$SKILL" in
           start) ALLOWED=true ;;
@@ -114,6 +107,7 @@ esac
 BARE_SKILL="${SKILL_NAME#superpowers:}"
 
 # Tier 1: DENY — orchestration skills replaced by dp-cto:start / dp-cto:execute
+# NOTE: This skill list must stay in sync with the enforcement message in session-start.sh
 case "$BARE_SKILL" in
   executing-plans|dispatching-parallel-agents|subagent-driven-development|using-git-worktrees|finishing-a-development-branch|ralph-loop|brainstorming|writing-plans)
     jq -n --arg skill "$SKILL_NAME" \
