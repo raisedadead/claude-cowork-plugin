@@ -12,12 +12,20 @@ default:
 version:
     @jq -r '.plugins[0].version' .claude-plugin/marketplace.json
 
+# === Test ===
+
+# Run hook contract tests and schema validation
+test:
+    npx vitest run
+
 # === Validate ===
 
 # Validate marketplace.json and plugin structure
 validate:
     #!/usr/bin/env bash
     set -euo pipefail
+    # Run tests first
+    just test
     ERRORS=0
     # Validate JSON files
     for f in .claude-plugin/marketplace.json plugins/*/.claude-plugin/plugin.json; do

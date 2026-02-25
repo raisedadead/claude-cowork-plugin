@@ -1,0 +1,28 @@
+{
+  "name": "dotplugins",
+  "version": "0.0.0",
+  "description": "Personal [Claude Code](https://docs.anthropic.com/en/docs/claude-code) plugin marketplace.",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/raisedadead/dotplugins.git"
+  },
+  "keywords": [],
+  "author": "Mrugesh Mohapatra <noreply@mrugesh.dev> (https://mrugesh.dev/)",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/raisedadead/dotplugins/issues"
+  },
+  "homepage": "https://github.com/raisedadead/dotplugins#readme",
+  "devDependencies": {
+    "vitest": "^4.0.18"
+  }
+}

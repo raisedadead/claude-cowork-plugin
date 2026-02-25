@@ -24,15 +24,9 @@ If you catch yourself writing application code, STOP. You are delegating, not co
 | "I'll set up worktrees by default"           | Shared workspace is default. Worktrees only on request or clear need. |
 | "I'll dispatch 5+ agents to go faster"       | More agents = more overhead. Batch in rounds of 3-4.                  |
 
-## Prerequisite: Enforced Plan Check
+## Plan Enforcement
 
-A plan MUST exist before invoking this skill. Verify in this order:
-
-1. Read `.claude/plans/_index.md` — find the active plan entry
-2. Read the referenced plan file — confirm it contains task specs
-3. Confirm each task spec has: description, file scope, acceptance criteria
-
-If no plan is found: say **"No plan found. Run /dp-cto:start first."** and STOP. Do not proceed.
+The stage machine hook enforces that the planning stage has been completed before this skill runs. If you see this skill, `/dp-cto:start` has already run.
 
 ## Step 1: Assess Isolation
 
@@ -194,11 +188,17 @@ If integration tests fail, use `superpowers:systematic-debugging` to diagnose be
    ```
 4. Update `.claude/plans/_index.md` status to "Complete"
 
+<CHAIN>
+Execution complete. The workflow cycle is done.
+To start a new feature, the user should invoke /dp-cto:start.
+Do NOT auto-invoke /dp-cto:start. Wait for the user to initiate the next cycle.
+</CHAIN>
+
 ## NEVER
 
 1. NEVER write application code yourself — delegate everything
 2. NEVER proceed past review with open issues
-3. NEVER skip the plan prerequisite check
+3. NEVER run without a completed plan from /dp-cto:start
 4. NEVER use placeholders in teammate prompts — resolve actual file paths
 5. NEVER spawn more than 4 teammates in a single round
 6. NEVER answer a teammate's question by coding the solution — send guidance only

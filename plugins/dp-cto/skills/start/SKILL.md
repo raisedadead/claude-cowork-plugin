@@ -202,6 +202,12 @@ Print exactly:
 
 Do NOT invoke execute. Do NOT offer to start execution. The user decides when.
 
+<CHAIN>
+Planning complete. The next step in the workflow is /dp-cto:execute.
+The user decides when to run it. Do NOT auto-invoke /dp-cto:execute.
+The stage machine will deny any skill except /dp-cto:execute or /dp-cto:start (re-plan) at this point.
+</CHAIN>
+
 ## NEVER
 
 1. NEVER write application code — you are planning, not implementing

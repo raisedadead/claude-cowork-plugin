@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["hooks"],
+  "properties": {
+    "description": { "type": "string" },
+    "hooks": {
+      "type": "object",
+      "propertyNames": {
+        "enum": [
+          "SessionStart",
+          "UserPromptSubmit",
+          "PreToolUse",
+          "PermissionRequest",
+          "PostToolUse",
+          "PostToolUseFailure",
+          "Notification",
+          "SubagentStart",
+          "SubagentStop",
+          "Stop",
+          "TeammateIdle",
+          "TaskCompleted",
+          "ConfigChange",
+          "WorktreeCreate",
+          "WorktreeRemove",
+          "PreCompact",
+          "SessionEnd"
+        ]
+      },
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["matcher", "hooks"],
+          "properties": {
+            "matcher": { "type": "string" },
+            "hooks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["type"],
+                "properties": {
+                  "type": { "enum": ["command", "prompt", "agent"] },
+                  "command": { "type": "string" },
+                  "prompt": { "type": "string" },
+                  "model": { "type": "string" },
+                  "timeout": { "type": "number" },
+                  "async": { "type": "boolean" },
+                  "statusMessage": { "type": "string" },
+                  "once": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# Shared library for dp-cto stage state management.
+# Source this file — no side effects, functions only.
+
+stage_dir() {
+  local base="${CWD:-$(pwd)}"
+  echo "${base}/.claude/dp-cto"
+}
+
+stage_file() {
+  local session_id="$1"
+  echo "$(stage_dir)/${session_id}.stage.json"
+}
+
+read_stage() {
+  local session_id="$1"
+  local file
+  file="$(stage_file "$session_id")"
+
+  if [ ! -f "$file" ]; then
+    echo "idle"
+    return 0
+  fi
+
+  local stage
+  stage=$(jq -r '.stage // empty' "$file" 2>/dev/null) || true
+  if [ -z "$stage" ]; then
+    echo "idle"
+    return 0
+  fi
+  echo "$stage"
+}
+
+write_stage() {
+  local session_id="$1"
+  local stage="$2"
+  local plan_path="${3:-}"
+  local file
+  file="$(stage_file "$session_id")"
+  local dir
+  dir="$(stage_dir)"
+
+  mkdir -p "$dir"
+
+  local started_at
+  local history
+
+  if [ -f "$file" ]; then
+    started_at=$(jq -r '.started_at // empty' "$file" 2>/dev/null) || true
+    history=$(jq -c '.history // []' "$file" 2>/dev/null) || true
+  fi
+
+  if [ -z "${started_at:-}" ]; then
+    started_at=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+  fi
+
+  if [ -z "${history:-}" ] || [ "$history" = "null" ]; then
+    history="[]"
+  fi
+
+  history=$(echo "$history" | jq -c --arg s "$stage" '. + [$s]')
+
+  local tmpfile
+  tmpfile="${file}.tmp.$$"
+
+  if ! jq -n \
+    --arg stage "$stage" \
+    --arg plan_path "$plan_path" \
+    --arg started_at "$started_at" \
+    --argjson history "$history" \
+    '{stage: $stage, plan_path: $plan_path, started_at: $started_at, history: $history}' \
+    > "$tmpfile" 2>/dev/null; then
+    rm -f "$tmpfile"
+    return 1
+  fi
+
+  mv -f "$tmpfile" "$file"
+}
+
+cleanup_stage() {
+  local session_id="$1"
+  local file
+  file="$(stage_file "$session_id")"
+  rm -f "$file"
+}
