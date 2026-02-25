@@ -16,6 +16,12 @@ __pycache__/
 # Node
 node_modules/
 
+# Turbo
+.turbo/
+
+# Claude Code runtime state
+.claude/
+
 # OS
 .DS_Store
 Thumbs.db

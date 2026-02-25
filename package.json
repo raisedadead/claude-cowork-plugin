@@ -2,29 +2,36 @@
   "name": "dotplugins",
   "version": "0.0.0",
   "description": "Personal [Claude Code](https://docs.anthropic.com/en/docs/claude-code) plugin marketplace.",
-  "main": "index.js",
-  "directories": {
-    "test": "tests"
+  "keywords": [],
+  "homepage": "https://github.com/raisedadead/dotplugins#readme",
+  "bugs": {
+    "url": "https://github.com/raisedadead/dotplugins/issues"
   },
-  "scripts": {
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "prepare": "husky"
-  },
+  "license": "ISC",
+  "author": "Mrugesh Mohapatra <noreply@mrugesh.dev> (https://mrugesh.dev/)",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/raisedadead/dotplugins.git"
   },
-  "keywords": [],
-  "author": "Mrugesh Mohapatra <noreply@mrugesh.dev> (https://mrugesh.dev/)",
-  "license": "ISC",
   "type": "module",
-  "bugs": {
-    "url": "https://github.com/raisedadead/dotplugins/issues"
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepare": "husky",
+    "lint": "oxlint tests/",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "check": "turbo run test lint fmt:check",
+    "validate": "pnpm run check && bash scripts/validate.sh",
+    "release": "bash scripts/release.sh",
+    "version": "jq -r '.plugins[0].version' .claude-plugin/marketplace.json"
   },
-  "homepage": "https://github.com/raisedadead/dotplugins#readme",
   "devDependencies": {
     "husky": "^9.1.7",
+    "oxfmt": "^0.35.0",
+    "oxlint": "^1.50.0",
+    "turbo": "^2.8.10",
     "vitest": "^4.0.18"
-  }
+  },
+  "packageManager": "pnpm@10.30.2"
 }

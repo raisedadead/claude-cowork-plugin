@@ -16,10 +16,7 @@ export interface HookResult {
   json: Record<string, unknown> | null;
 }
 
-export function runHook(
-  script: string,
-  input: Record<string, unknown>
-): Promise<HookResult> {
+export function runHook(script: string, input: Record<string, unknown>): Promise<HookResult> {
   return new Promise((resolve) => {
     const proc = spawn("bash", [join(HOOK_DIR, script)], {
       stdio: ["pipe", "pipe", "pipe"],
@@ -63,11 +60,7 @@ export async function removeTmpDir(dir: string): Promise<void> {
   await rm(dir, { recursive: true, force: true });
 }
 
-export async function seedStage(
-  tmpDir: string,
-  sessionId: string,
-  stage: string
-): Promise<void> {
+export async function seedStage(tmpDir: string, sessionId: string, stage: string): Promise<void> {
   const dir = join(tmpDir, ".claude", "dp-cto");
   await mkdir(dir, { recursive: true });
   const data = {
@@ -76,32 +69,20 @@ export async function seedStage(
     started_at: "2026-01-01T00:00:00Z",
     history: [stage],
   };
-  await writeFile(
-    join(dir, `${sessionId}.stage.json`),
-    JSON.stringify(data)
-  );
+  await writeFile(join(dir, `${sessionId}.stage.json`), JSON.stringify(data));
 }
 
-export async function seedCorruptStage(
-  tmpDir: string,
-  sessionId: string
-): Promise<void> {
+export async function seedCorruptStage(tmpDir: string, sessionId: string): Promise<void> {
   const dir = join(tmpDir, ".claude", "dp-cto");
   await mkdir(dir, { recursive: true });
-  await writeFile(
-    join(dir, `${sessionId}.stage.json`),
-    "NOT VALID JSON{{{"
-  );
+  await writeFile(join(dir, `${sessionId}.stage.json`), "NOT VALID JSON{{{");
 }
 
-export async function getStage(
-  tmpDir: string,
-  sessionId: string
-): Promise<string> {
+export async function getStage(tmpDir: string, sessionId: string): Promise<string> {
   try {
     const raw = await readFile(
       join(tmpDir, ".claude", "dp-cto", `${sessionId}.stage.json`),
-      "utf-8"
+      "utf-8",
     );
     const data = JSON.parse(raw);
     return data.stage ?? "idle";

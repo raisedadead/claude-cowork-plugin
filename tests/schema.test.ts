@@ -7,20 +7,8 @@ import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = join(__dirname, "..");
 const MARKETPLACE_JSON = join(REPO_ROOT, ".claude-plugin", "marketplace.json");
-const PLUGIN_JSON = join(
-  REPO_ROOT,
-  "plugins",
-  "dp-cto",
-  ".claude-plugin",
-  "plugin.json"
-);
-const HOOKS_JSON = join(
-  REPO_ROOT,
-  "plugins",
-  "dp-cto",
-  "hooks",
-  "hooks.json"
-);
+const PLUGIN_JSON = join(REPO_ROOT, "plugins", "dp-cto", ".claude-plugin", "plugin.json");
+const HOOKS_JSON = join(REPO_ROOT, "plugins", "dp-cto", "hooks", "hooks.json");
 const PLUGIN_ROOT = join(REPO_ROOT, "plugins", "dp-cto");
 const SNAPSHOT_DIR = join(__dirname, "snapshots");
 
@@ -126,7 +114,7 @@ describe("hooks.json", () => {
   });
 
   test("each event has valid matcher array structure", () => {
-    for (const [event, matchers] of Object.entries(hooks)) {
+    for (const [_event, matchers] of Object.entries(hooks)) {
       expect(matchers).toBeInstanceOf(Array);
       for (const matcher of matchers as Record<string, unknown>[]) {
         expect(matcher.matcher).toBeTypeOf("string");
@@ -150,14 +138,10 @@ describe("hooks.json", () => {
       for (const matcher of matchers as Record<string, unknown>[]) {
         for (const hook of matcher.hooks as Record<string, unknown>[]) {
           if (hook.type === "command" && hook.command) {
-            const resolved = (hook.command as string).replace(
-              "${CLAUDE_PLUGIN_ROOT}",
-              PLUGIN_ROOT
+            const resolved = (hook.command as string).replace("${CLAUDE_PLUGIN_ROOT}", PLUGIN_ROOT);
+            expect(existsSync(resolved), `${hook.command} should resolve to existing file`).toBe(
+              true,
             );
-            expect(
-              existsSync(resolved),
-              `${hook.command} should resolve to existing file`
-            ).toBe(true);
           }
         }
       }
@@ -169,9 +153,7 @@ describe("hooks.json", () => {
 
 describe("Schema snapshots", () => {
   test("local snapshots exist", () => {
-    expect(existsSync(join(SNAPSHOT_DIR, "marketplace.schema.json"))).toBe(
-      true
-    );
+    expect(existsSync(join(SNAPSHOT_DIR, "marketplace.schema.json"))).toBe(true);
     expect(existsSync(join(SNAPSHOT_DIR, "plugin.schema.json"))).toBe(true);
     expect(existsSync(join(SNAPSHOT_DIR, "hooks.schema.json"))).toBe(true);
   });
@@ -189,13 +171,10 @@ describe("Schema snapshots", () => {
         return; // response is not JSON (e.g. HTML redirect)
       }
 
-      const local = await readFile(
-        join(SNAPSHOT_DIR, "marketplace.schema.json"),
-        "utf-8"
-      );
+      const local = await readFile(join(SNAPSHOT_DIR, "marketplace.schema.json"), "utf-8");
       if (live.trim() !== local.trim()) {
         console.warn(
-          "WARNING: Local marketplace schema snapshot differs from live schema — review and update"
+          "WARNING: Local marketplace schema snapshot differs from live schema — review and update",
         );
       }
     } catch {

@@ -39,10 +39,7 @@ function expectAllowed(r: Awaited<ReturnType<typeof runHook>>) {
   }
 }
 
-function expectDenied(
-  r: Awaited<ReturnType<typeof runHook>>,
-  reasonMatch?: RegExp
-) {
+function expectDenied(r: Awaited<ReturnType<typeof runHook>>, reasonMatch?: RegExp) {
   expect(r.exitCode).toBe(0);
   const hso = r.json?.hookSpecificOutput as Record<string, unknown> | undefined;
   expect(hso?.permissionDecision).toBe("deny");
@@ -102,10 +99,7 @@ describe("Stage Enforcement (intercept-orchestration.sh)", () => {
     });
 
     test("ralph is denied", async () => {
-      expectDenied(
-        await runHook(HOOK, skillInput("dp-cto:ralph")),
-        /execute/i
-      );
+      expectDenied(await runHook(HOOK, skillInput("dp-cto:ralph")), /execute/i);
     });
   });
 
@@ -121,17 +115,11 @@ describe("Stage Enforcement (intercept-orchestration.sh)", () => {
     });
 
     test("start is denied", async () => {
-      expectDenied(
-        await runHook(HOOK, skillInput("dp-cto:start")),
-        /progress/i
-      );
+      expectDenied(await runHook(HOOK, skillInput("dp-cto:start")), /progress/i);
     });
 
     test("execute is denied", async () => {
-      expectDenied(
-        await runHook(HOOK, skillInput("dp-cto:execute")),
-        /progress/i
-      );
+      expectDenied(await runHook(HOOK, skillInput("dp-cto:execute")), /progress/i);
     });
   });
 
@@ -143,10 +131,7 @@ describe("Stage Enforcement (intercept-orchestration.sh)", () => {
     });
 
     test("start is denied", async () => {
-      expectDenied(
-        await runHook(HOOK, skillInput("dp-cto:start")),
-        /review/i
-      );
+      expectDenied(await runHook(HOOK, skillInput("dp-cto:start")), /review/i);
     });
   });
 
@@ -158,21 +143,15 @@ describe("Stage Enforcement (intercept-orchestration.sh)", () => {
     });
 
     test("execute is denied", async () => {
-      expectDenied(
-        await runHook(HOOK, skillInput("dp-cto:execute")),
-        /start/i
-      );
+      expectDenied(await runHook(HOOK, skillInput("dp-cto:execute")), /start/i);
     });
   });
 
   describe("ralph-cancel safety valve", () => {
-    test.each(["idle", "planning", "executing", "complete"])(
-      "allowed from %s",
-      async (stage) => {
-        await seedStage(tmpDir, "test-session", stage);
-        expectAllowed(await runHook(HOOK, skillInput("dp-cto:ralph-cancel")));
-      }
-    );
+    test.each(["idle", "planning", "executing", "complete"])("allowed from %s", async (stage) => {
+      await seedStage(tmpDir, "test-session", stage);
+      expectAllowed(await runHook(HOOK, skillInput("dp-cto:ralph-cancel")));
+    });
   });
 
   describe("pre-execution stage writes", () => {
