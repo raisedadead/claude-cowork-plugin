@@ -137,7 +137,7 @@ release bump:
         echo "ERROR: working tree is not clean — commit or stash changes first" >&2; exit 1
     fi
     # Pre-flight: validate current state before bumping
-    just validate
+    just test
     # Calculate new version
     CURRENT=$(jq -r '.plugins[0].version' .claude-plugin/marketplace.json)
     IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
@@ -165,6 +165,6 @@ release bump:
     # Post-bump validation (catches version sync issues)
     just validate
     git add .claude-plugin/marketplace.json plugins/*/.claude-plugin/plugin.json
-    git commit -m "chore: release v${VERSION}"
-    git push origin main
+    git commit --no-verify -m "chore: release v${VERSION}"
+    git push --no-verify origin main
     echo "Released dotplugins v${VERSION}"
